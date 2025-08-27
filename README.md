@@ -5,8 +5,9 @@ A Python utility that splits PDF pages vertically, starting from a specified pag
 ## Features
 
 - **Vertical Page Splitting**: Splits each page vertically into left and right halves
-- **Selective Processing**: Choose which page to start splitting from (default: page 3)
+- **Selective Processing**: Choose which page to start splitting from (default: page 3) and optionally which page to end at
 - **Preserve Early Pages**: Pages before the starting page remain unchanged
+- **Preserve Later Pages**: Pages after the ending page remain unchanged (when end parameter is specified)
 - **Automatic Output Naming**: Generates output filename automatically if not specified
 - **Command-line Interface**: Easy-to-use CLI with helpful arguments
 - **Error Handling**: Robust error handling with detailed feedback
@@ -50,9 +51,19 @@ Start splitting from a different page:
 python split_pdf.py input.pdf -s 5
 ```
 
+End splitting at a specific page:
+```bash
+python split_pdf.py input.pdf -e 7
+```
+
+Split only pages 2 through 4:
+```bash
+python split_pdf.py input.pdf -s 2 -e 4
+```
+
 Combine options:
 ```bash
-python split_pdf.py input.pdf -o my_split_document.pdf -s 2
+python split_pdf.py input.pdf -o my_split_document.pdf -s 2 -e 6
 ```
 
 ### Command-line Arguments
@@ -60,6 +71,7 @@ python split_pdf.py input.pdf -o my_split_document.pdf -s 2
 - `input_file` (required): Path to the input PDF file to be processed
 - `-o, --output` (optional): Path for the output file. If not provided, automatically generates filename (e.g., 'input.pdf' → 'input - Split.pdf')
 - `-s, --start` (optional): The page number to start splitting from (1-based index). Default is 3
+- `-e, --end` (optional): The page number to end splitting at (1-based index). If not provided, splits until the end of the PDF
 
 ### Help
 
@@ -72,13 +84,15 @@ python split_pdf.py --help
 
 1. **Input Processing**: The tool reads the specified PDF file using PyPDF2
 2. **Page Preservation**: Pages before the starting page are copied unchanged to the output
-3. **Page Splitting**: From the starting page onwards, each page is split vertically:
+3. **Page Splitting**: From the starting page to the ending page (or end of PDF if not specified), each page is split vertically:
    - Left half: Contains the left portion of the original page
    - Right half: Contains the right portion of the original page
-4. **Output Generation**: Creates a new PDF with the processed pages
+4. **Page Preservation**: Pages after the ending page (if specified) are copied unchanged to the output
+5. **Output Generation**: Creates a new PDF with the processed pages
 
 ## Example Output
 
+### Example 1: Default behavior (start page 3, no end page)
 For a 5-page PDF with splitting starting from page 3:
 - Pages 1-2: Remain unchanged
 - Page 3: Becomes pages 3 (left half) and 4 (right half)
@@ -86,6 +100,15 @@ For a 5-page PDF with splitting starting from page 3:
 - Page 5: Becomes pages 7 (left half) and 8 (right half)
 
 Total output: 8 pages (2 unchanged + 6 split pages)
+
+### Example 2: With end page specified (start page 3, end page 4)
+For a 5-page PDF with splitting from page 3 to page 4:
+- Pages 1-2: Remain unchanged
+- Page 3: Becomes pages 3 (left half) and 4 (right half)
+- Page 4: Becomes pages 5 (left half) and 6 (right half)
+- Page 5: Remains unchanged as page 7
+
+Total output: 7 pages (2 unchanged before + 4 split pages + 1 unchanged after)
 
 ## Error Handling
 
