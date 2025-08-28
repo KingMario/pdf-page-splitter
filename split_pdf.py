@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.11
 """
 PDF Page Splitting Utility
-Splits each page vertically into two, starting from a specified page.
+Splits each page vertically or horizontally into two, starting from a specified page.
 """
 
 import PyPDF2
@@ -9,9 +9,16 @@ import os
 import argparse  # Import the argparse module
 
 
-def split_pdf_pages(input_file, output_file, start_page=3, end_page=None):
+def split_pdf_pages(input_file, output_file, start_page=3, end_page=None, direction="vertical"):
     """
-    Splits each page of a PDF file vertically into two, starting from a specified page.
+    Splits each page of a PDF file into two, starting from a specified page.
+    
+    Args:
+        input_file: Path to the input PDF file
+        output_file: Path to the output PDF file
+        start_page: Page number to start splitting from (1-based index)
+        end_page: Page number to end splitting at (1-based index)
+        direction: Direction to split pages ("vertical" or "horizontal")
     """
 
     try:
@@ -48,19 +55,33 @@ def split_pdf_pages(input_file, output_file, start_page=3, end_page=None):
 
                 print(f"Processing page {i+1} - Dimensions: {width} x {height}")
 
-                # Left half
-                writer.add_page(page)
-                left_page = writer.pages[-1]
-                # Set cropbox directly (compatible with PyPDF2 v3.0+)
-                left_page.cropbox = PyPDF2.generic.RectangleObject([0, 0, width / 2, height])
+                if direction == "vertical":
+                    # Vertical split: Left and Right halves
+                    # First half (left)
+                    writer.add_page(page)
+                    first_half = writer.pages[-1]
+                    first_half.cropbox = PyPDF2.generic.RectangleObject([0, 0, width / 2, height])
 
-                # Right half
-                writer.add_page(page)
-                right_page = writer.pages[-1]
-                # Set cropbox directly (compatible with PyPDF2 v3.0+)
-                right_page.cropbox = PyPDF2.generic.RectangleObject([width / 2, 0, width, height])
+                    # Second half (right)
+                    writer.add_page(page)
+                    second_half = writer.pages[-1]
+                    second_half.cropbox = PyPDF2.generic.RectangleObject([width / 2, 0, width, height])
 
-                print(f"Split complete: Page {i+1} -> Left half + Right half")
+                    print(f"Split complete: Page {i+1} -> Left half + Right half")
+                
+                elif direction == "horizontal":
+                    # Horizontal split: Top and Bottom halves
+                    # First half (top)
+                    writer.add_page(page)
+                    first_half = writer.pages[-1]
+                    first_half.cropbox = PyPDF2.generic.RectangleObject([0, height / 2, width, height])
+
+                    # Second half (bottom)
+                    writer.add_page(page)
+                    second_half = writer.pages[-1]
+                    second_half.cropbox = PyPDF2.generic.RectangleObject([0, 0, width, height / 2])
+
+                    print(f"Split complete: Page {i+1} -> Top half + Bottom half")
 
             # Add pages after the end page without modification
             for i in range(actual_end_page, total_pages):
@@ -97,7 +118,7 @@ def split_pdf_pages(input_file, output_file, start_page=3, end_page=None):
 def main():
     # --- Parse command-line arguments using argparse ---
     parser = argparse.ArgumentParser(
-        description="PDF Page Splitting Utility. Splits each page of a PDF file vertically, starting from a specified page.",
+        description="PDF Page Splitting Utility. Splits each page of a PDF file vertically or horizontally, starting from a specified page.",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument("input_file", help="Path to the input PDF file to be processed.")
@@ -119,6 +140,13 @@ def main():
         type=int,
         help="The page number to end splitting at (1-based index).\nIf not provided, splits until the end of the PDF.",
     )
+    parser.add_argument(
+        "-d",
+        "--direction",
+        choices=["vertical", "horizontal"],
+        default="vertical",
+        help="The direction to split pages.\n'vertical' splits into left and right halves (default).\n'horizontal' splits into top and bottom halves.",
+    )
     args = parser.parse_args()
 
     # --- Set filenames based on arguments ---
@@ -138,7 +166,7 @@ def main():
     print("Starting PDF page splitting...")
     print("=" * 50)
 
-    success = split_pdf_pages(input_file, output_file, start_page=args.start, end_page=args.end)
+    success = split_pdf_pages(input_file, output_file, start_page=args.start, end_page=args.end, direction=args.direction)
 
     if success:
         print("=" * 50)
