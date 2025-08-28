@@ -1,10 +1,10 @@
 # PDF Page Splitter
 
-A Python utility that splits PDF pages vertically, starting from a specified page number. This tool is useful for processing scanned documents or PDFs where you want to separate content that spans across pages horizontally.
+A Python utility that splits PDF pages vertically or horizontally, starting from a specified page number. This tool is useful for processing scanned documents or PDFs where you want to separate content that spans across pages horizontally or vertically.
 
 ## Features
 
-- **Vertical Page Splitting**: Splits each page vertically into left and right halves
+- **Vertical and Horizontal Page Splitting**: Splits each page vertically into left and right halves, or horizontally into top and bottom halves
 - **Selective Processing**: Choose which page to start splitting from (default: page 3) and optionally which page to end at
 - **Preserve Early Pages**: Pages before the starting page remain unchanged
 - **Preserve Later Pages**: Pages after the ending page remain unchanged (when end parameter is specified)
@@ -61,9 +61,19 @@ Split only pages 2 through 4:
 python split_pdf.py input.pdf -s 2 -e 4
 ```
 
+Split pages horizontally (top and bottom halves):
+```bash
+python split_pdf.py input.pdf -d horizontal
+```
+
+Split pages vertically (left and right halves - default):
+```bash
+python split_pdf.py input.pdf -d vertical
+```
+
 Combine options:
 ```bash
-python split_pdf.py input.pdf -o my_split_document.pdf -s 2 -e 6
+python split_pdf.py input.pdf -o my_split_document.pdf -s 2 -e 6 -d horizontal
 ```
 
 ### Command-line Arguments
@@ -72,6 +82,7 @@ python split_pdf.py input.pdf -o my_split_document.pdf -s 2 -e 6
 - `-o, --output` (optional): Path for the output file. If not provided, automatically generates filename (e.g., 'input.pdf' → 'input - Split.pdf')
 - `-s, --start` (optional): The page number to start splitting from (1-based index). Default is 3
 - `-e, --end` (optional): The page number to end splitting at (1-based index). If not provided, splits until the end of the PDF
+- `-d, --direction` (optional): The direction to split pages. Choices are 'vertical' (default) or 'horizontal'. 'vertical' splits into left and right halves, 'horizontal' splits into top and bottom halves
 
 ### Help
 
@@ -84,16 +95,16 @@ python split_pdf.py --help
 
 1. **Input Processing**: The tool reads the specified PDF file using PyPDF2
 2. **Page Preservation**: Pages before the starting page are copied unchanged to the output
-3. **Page Splitting**: From the starting page to the ending page (or end of PDF if not specified), each page is split vertically:
-   - Left half: Contains the left portion of the original page
-   - Right half: Contains the right portion of the original page
+3. **Page Splitting**: From the starting page to the ending page (or end of PDF if not specified), each page is split according to the specified direction:
+   - **Vertical** (default): Left half and right half
+   - **Horizontal**: Top half and bottom half
 4. **Page Preservation**: Pages after the ending page (if specified) are copied unchanged to the output
 5. **Output Generation**: Creates a new PDF with the processed pages
 
 ## Example Output
 
-### Example 1: Default behavior (start page 3, no end page)
-For a 5-page PDF with splitting starting from page 3:
+### Example 1: Default behavior (vertical split, start page 3, no end page)
+For a 5-page PDF with vertical splitting starting from page 3:
 - Pages 1-2: Remain unchanged
 - Page 3: Becomes pages 3 (left half) and 4 (right half)
 - Page 4: Becomes pages 5 (left half) and 6 (right half)
@@ -101,8 +112,17 @@ For a 5-page PDF with splitting starting from page 3:
 
 Total output: 8 pages (2 unchanged + 6 split pages)
 
-### Example 2: With end page specified (start page 3, end page 4)
-For a 5-page PDF with splitting from page 3 to page 4:
+### Example 2: Horizontal split (start page 3, end page 4)
+For a 5-page PDF with horizontal splitting from page 3 to page 4:
+- Pages 1-2: Remain unchanged
+- Page 3: Becomes pages 3 (top half) and 4 (bottom half)
+- Page 4: Becomes pages 5 (top half) and 6 (bottom half)
+- Page 5: Remains unchanged as page 7
+
+Total output: 7 pages (2 unchanged before + 4 split pages + 1 unchanged after)
+
+### Example 3: With end page specified (vertical split, start page 3, end page 4)
+For a 5-page PDF with vertical splitting from page 3 to page 4:
 - Pages 1-2: Remain unchanged
 - Page 3: Becomes pages 3 (left half) and 4 (right half)
 - Page 4: Becomes pages 5 (left half) and 6 (right half)
